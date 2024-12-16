@@ -1,8 +1,14 @@
+// ./public/index.js
+// 프론트엔드에서요 index.js가 가장 우선적으로 호출되는 파일.
 import Player from './Player.js';
 import Ground from './Ground.js';
 import CactiController from './CactiController.js';
 import Score from './Score.js';
 import ItemController from './ItemController.js';
+// 소켓.js 호출
+// 핸들러s/helper.js의 handleConnectionimport어서
+// uuId와 socketId를 전달함
+import { sendEvent } from './Socket.js';
 
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
@@ -154,6 +160,7 @@ function updateGameSpeed(deltaTime) {
   gameSpeed += deltaTime * GAME_SPEED_INCREMENT;
 }
 
+// 게임이 시작하는 코드
 function reset() {
   hasAddedEventListenersForRestart = false;
   gameover = false;
@@ -163,6 +170,7 @@ function reset() {
   cactiController.reset();
   score.reset();
   gameSpeed = GAME_SPEED_START;
+  sendEvent(2, { timestamp: Date.now() });
 }
 
 function setupGameReset() {
@@ -205,6 +213,7 @@ function gameLoop(currentTime) {
     player.update(gameSpeed, deltaTime);
     updateGameSpeed(deltaTime);
 
+    /////////////////////////////////////////////////////////
     score.update(deltaTime);
   }
 

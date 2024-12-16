@@ -1,0 +1,85 @@
+// DB안쓰는 것 같은데?
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// createdAt    DateTime       @default(now()) @map("createdAt")
+// updatedAt    DateTime       @updatedAt @map("updatedAt")
+
+// 로그인 추가
+model Users {
+  userId         Int     @id @default(autoincrement()) @map("userId")
+  name           String  @unique @map("name")
+  currentStageId Int?
+  targetStageId  Int?
+  // 스테이지, 유저 연결
+  currentStage   Stages? @relation("StagesToUsersC", fields: [currentStageId], references: [stageId], onDelete: SetNull)
+  targetStage    Stages? @relation("StagesToUsersT", fields: [targetStageId], references: [stageId], onDelete: SetNull)
+
+  payload Payloads[] @relation("UsersToPayloads")
+
+  @@map("Users")
+}
+
+model Stages {
+  stageId  Int       @id @default(autoincrement())
+  number   Int       @unique @map("number")
+  name     String    @unique @map("name")
+  maxScore BigInt    @map("maxScore")
+  items    String    @map("items")
+  updateAt DateTime? @updatedAt @map("update")
+  createAt DateTime  @default(now()) @map("createAt")
+  UsersC   Users[]   @relation("StagesToUsersC")
+  UsersT   Users[]   @relation("StagesToUsersT")
+  // currentStage Users[] @relation("StagesToUsersCurrent")
+
+  @@map("Stages")
+}
+
+model UserNexstStage {
+  UserNexstStageId Int      @id @default(autoincrement())
+  userId           Int
+  createAt         DateTime @default(now()) @map("createAt")
+
+  @@map("UserNexstStage")
+}
+
+model Payloads {
+  handlerId     BigInt @id @default(autoincrement()) @map("handlerId")
+  clientVersion String @default("1.0.0") @map("clientVersion")
+  payload       Json   @map("payload")
+  userId        Int    @map("userId")
+  users         Users  @relation("UsersToPayloads", fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@map("Payloads")
+}
+
+model Items {
+  itemId   Int       @id @default(autoincrement()) @map("itemId")
+  name     String    @unique @map("name")
+  score    Int       @map("score")
+  updateAt DateTime? @updatedAt @map("update")
+  createAt DateTime  @default(now()) @map("createAt")
+
+  @@map("Items")
+}
+
+// 게임 로드 될 때 동일한 userId데이터는 삭제되어야함
+// 게임 결과 보여주고 삭제하자자
+model GetItem {
+  getItemId Int    @id @default(autoincrement()) @map("getItemId")
+  // 유저ID   
+  userId    String @map("userId")
+  // users          Users  @relation("UsersToPayloads", fields: [userId], references: [userId], onDelete: Cascade)
+
+  // 아이템 ID
+  itemId String @map("itemId")
+  // items          Items  @relation("ItemToGetItem", fields: [itemId], references: [itemId], onDelete: Cascade)
+
+  createAt DateTime @default(now()) @map("createAt")
+}
